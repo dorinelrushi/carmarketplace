@@ -3,6 +3,8 @@ import dbConnect from '@/lib/mongodb';
 import Car from '@/models/Car';
 import { auth } from '@clerk/nextjs/server';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(request) {
     await dbConnect();
     try {
