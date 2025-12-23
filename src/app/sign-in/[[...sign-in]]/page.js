@@ -1,7 +1,7 @@
 "use client"; //
 import { SignIn } from "@clerk/nextjs";
 import { useUser } from "@clerk/nextjs";
-import { useRouter } from "next/navigation";
+import { useRouter } from "next/router";
 
 export default function Page() {
   const { isSignedIn } = useUser();
