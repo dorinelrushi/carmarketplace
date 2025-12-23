@@ -1,15 +1,27 @@
-"use client"; //
-import { SignIn } from "@clerk/nextjs";
-import { useUser } from "@clerk/nextjs";
+"use client";
+import { SignIn, useUser } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 
 export default function Page() {
-  const { isSignedIn } = useUser();
+  const { isLoaded, isSignedIn } = useUser();
   const router = useRouter();
 
-  // If the user is already signed in, redirect to buyer dashboard
+  useEffect(() => {
+    if (isLoaded && isSignedIn) {
+      router.push("/dashboard/buyer");
+    }
+  }, [isLoaded, isSignedIn, router]);
+
+  if (!isLoaded) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-black">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-red-600"></div>
+      </div>
+    );
+  }
+
   if (isSignedIn) {
-    router.push("/dashboard/buyer");
     return null;
   }
 
