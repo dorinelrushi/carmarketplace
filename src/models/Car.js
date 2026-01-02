@@ -77,6 +77,14 @@ const CarSchema = new mongoose.Schema({
         enum: ['active', 'reserved', 'sold'],
         default: 'active',
     },
+    views: {
+        type: Number,
+        default: 0,
+    },
+    whatsappClicks: {
+        type: Number,
+        default: 0,
+    },
     createdAt: {
         type: Date,
         default: Date.now,

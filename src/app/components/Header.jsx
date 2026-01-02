@@ -74,8 +74,12 @@ export default function Header() {
 
                         {/* Desktop Navigation */}
                         <div className="hidden md:flex items-center space-x-8">
-                            <Link href="/#models" className="text-gray-300 hover:text-white transition-colors capitalize font-medium">
-                                Models
+                            <Link href="/cars" className="text-gray-300 hover:text-white transition-colors capitalize font-medium">
+                                Browse Cars
+                            </Link>
+
+                            <Link href="/owners" className="text-gray-300 hover:text-white transition-colors capitalize font-medium">
+                                Top Sellers
                             </Link>
 
                             <SignedIn>
@@ -164,11 +168,19 @@ export default function Header() {
                             className="md:hidden mt-4 pb-6 space-y-4 bg-black/95 backdrop-blur-xl -mx-6 px-6"
                         >
                             <Link
-                                href="/#models"
+                                href="/cars"
                                 className="block text-gray-300 hover:text-white transition-colors py-3 border-b border-white/10"
                                 onClick={() => setIsOpen(false)}
                             >
-                                Models
+                                Browse Cars
+                            </Link>
+
+                            <Link
+                                href="/owners"
+                                className="block text-gray-300 hover:text-white transition-colors py-3 border-b border-white/10"
+                                onClick={() => setIsOpen(false)}
+                            >
+                                Top Sellers
                             </Link>
 
                             <SignedIn>

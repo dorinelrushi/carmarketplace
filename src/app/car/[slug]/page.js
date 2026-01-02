@@ -117,12 +117,32 @@ export default function CarDetailPage({ params }) {
                         <div className="space-y-8">
                             <div>
                                 <div className="flex items-center gap-3 mb-4">
-                                    <span className="bg-red-600/10 text-red-600 px-4 py-1 rounded-full text-xs font-bold uppercase tracking-widest border border-red-600/20">{car.type}</span>
+                                    <span className={`px-4 py-1 rounded-full text-xs font-bold uppercase tracking-widest border ${car.status === 'sold' ? 'bg-zinc-800 text-zinc-500 border-zinc-700' :
+                                        car.status === 'reserved' ? 'bg-amber-600/10 text-amber-500 border-amber-600/20' :
+                                            'bg-red-600/10 text-red-600 border-red-600/20'
+                                        }`}>
+                                        {car.status}
+                                    </span>
+                                    <span className="bg-white/5 text-gray-400 px-4 py-1 rounded-full text-xs font-bold uppercase tracking-widest border border-white/10">{car.type}</span>
                                     <span className="bg-white/5 text-gray-400 px-4 py-1 rounded-full text-xs font-bold uppercase tracking-widest border border-white/10">{car.listingType === 'sale' ? 'For Sale' : 'For Rent'}</span>
                                 </div>
-                                <h1 className="text-4xl md:text-5xl font-black mb-4 leading-tight uppercase tracking-tighter italic">
+                                <h1 className="text-4xl md:text-5xl font-black mb-2 leading-tight uppercase tracking-tighter italic">
                                     {car.make} <span className="text-red-600">{car.model}</span>
                                 </h1>
+                                <div className="flex items-center gap-3 mb-4">
+                                    <div className="w-8 h-8 rounded-full overflow-hidden border border-white/10">
+                                        {car.sellerImage ? (
+                                            <img src={car.sellerImage} alt={car.sellerName} className="w-full h-full object-cover" />
+                                        ) : (
+                                            <div className="w-full h-full bg-red-600 flex items-center justify-center text-[10px] font-bold">
+                                                {car.sellerName?.charAt(0)}
+                                            </div>
+                                        )}
+                                    </div>
+                                    <p className="text-gray-500 font-medium">
+                                        Listing by <span className="text-white bg-white/10 px-3 py-0.5 rounded-full text-sm">{car.sellerName}</span>
+                                    </p>
+                                </div>
                                 <p className="text-3xl font-bold text-white mb-6">
                                     {car.listingType === 'sale' ? car.price : `${car.rentalPrice} / Day`}
                                 </p>
@@ -138,7 +158,7 @@ export default function CarDetailPage({ params }) {
                                     </div>
                                     <div className="flex items-center gap-2">
                                         <Gauge className="w-5 h-5 text-red-600" />
-                                        <span>{car.mileage.toLocaleString()} KM</span>
+                                        <span>{car.mileage?.toLocaleString()} KM</span>
                                     </div>
                                 </div>
                             </div>
@@ -160,16 +180,25 @@ export default function CarDetailPage({ params }) {
                                 <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-6">
                                     <div>
                                         <h3 className="text-xl font-bold mb-2 uppercase italic tracking-tighter">Interested in this vehicle?</h3>
-                                        <p className="text-gray-400 text-sm">Contact the owner directly via WhatsApp for inquiries.</p>
+                                        <p className="text-gray-400 text-sm">Contact <span className="text-white font-bold">{car.sellerName}</span> directly via WhatsApp.</p>
                                     </div>
                                     <a
-                                        href={`https://wa.me/${car.whatsappNumber?.replace('+', '')}`}
+                                        href={`https://wa.me/${car.whatsappNumber?.replace('+', '')}?text=${encodeURIComponent(`Hello, I'm interested in the ${car.year} ${car.make} ${car.model} you listed for ${car.listingType === 'sale' ? car.price : car.rentalPrice}. Is it still available?`)}`}
                                         target="_blank"
                                         rel="noopener noreferrer"
+                                        onClick={async () => {
+                                            try {
+                                                await fetch('/api/cars/track', {
+                                                    method: 'POST',
+                                                    headers: { 'Content-Type': 'application/json' },
+                                                    body: JSON.stringify({ carId: car._id, action: 'whatsapp_click' })
+                                                });
+                                            } catch (e) { console.error(e); }
+                                        }}
                                         className="bg-green-600 hover:bg-green-700 text-white px-8 py-4 rounded-2xl font-bold flex items-center gap-3 transition-all active:scale-95 shadow-lg shadow-green-600/20 w-full md:w-auto justify-center"
                                     >
                                         <Phone className="w-5 h-5" />
-                                        Contact Owner
+                                        Contact Seller
                                     </a>
                                 </div>
                                 <div className="absolute -right-20 -bottom-20 w-64 h-64 bg-red-600/10 rounded-full blur-3xl"></div>

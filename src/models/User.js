@@ -21,6 +21,9 @@ const UserSchema = new mongoose.Schema({
         enum: ['buyer', 'seller'],
         default: null, // null means user hasn't selected a role yet
     },
+    profileImage: {
+        type: String,
+    },
     createdAt: {
         type: Date,
         default: Date.now,

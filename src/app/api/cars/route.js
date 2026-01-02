@@ -4,6 +4,8 @@ import Car from '@/models/Car';
 import { auth } from '@clerk/nextjs/server';
 import mongoose from 'mongoose';
 
+import User from '@/models/User';
+
 export const dynamic = 'force-dynamic';
 
 const generateSlug = (title) => {
@@ -19,22 +21,61 @@ export async function GET(request) {
         const { searchParams } = new URL(request.url);
         const sellerId = searchParams.get('sellerId');
         const slug = searchParams.get('slug');
+        const search = searchParams.get('search');
+        const make = searchParams.get('make');
+        const type = searchParams.get('type');
+        const listingType = searchParams.get('listingType');
+        const year = searchParams.get('year');
 
         if (slug) {
-            // Try slug first, then ID if it's a valid ObjectId
-            let car = await Car.findOne({ slug });
-
-            if (!car && mongoose.Types.ObjectId.isValid(slug)) {
-                car = await Car.findById(slug);
-            }
+            // Increment views when fetching a single car
+            let car = await Car.findOneAndUpdate(
+                { $or: [{ slug }, { _id: mongoose.Types.ObjectId.isValid(slug) ? slug : new mongoose.Types.ObjectId() }] },
+                { $inc: { views: 1 } },
+                { new: true }
+            );
 
             if (!car) return NextResponse.json({ success: false, error: 'Car not found' }, { status: 404 });
-            return NextResponse.json({ success: true, data: car });
+
+            // Get seller name
+            const seller = await User.findOne({ clerkId: car.sellerId });
+            const carData = car.toObject();
+            carData.sellerName = seller ? `${seller.firstName || ''} ${seller.lastName || ''}`.trim() : 'Premium Seller';
+            carData.sellerImage = seller?.profileImage || '';
+
+            return NextResponse.json({ success: true, data: carData });
         }
 
-        const query = sellerId ? { sellerId } : {};
+        // Build filter query
+        const query = {};
+        if (sellerId) query.sellerId = sellerId;
+        if (type) query.type = type;
+        if (listingType) query.listingType = listingType;
+        if (make) query.make = new RegExp(make, 'i');
+        if (year) query.year = parseInt(year);
+
+        if (search) {
+            query.$or = [
+                { title: new RegExp(search, 'i') },
+                { make: new RegExp(search, 'i') },
+                { model: new RegExp(search, 'i') },
+                { description: new RegExp(search, 'i') }
+            ];
+        }
+
         const cars = await Car.find(query).sort({ createdAt: -1 });
-        return NextResponse.json({ success: true, data: cars });
+
+        // Enhance with seller names
+        const carsWithSellers = await Promise.all(cars.map(async (car) => {
+            const seller = await User.findOne({ clerkId: car.sellerId });
+            return {
+                ...car.toObject(),
+                sellerName: seller ? `${seller.firstName || ''} ${seller.lastName || ''}`.trim() : 'Premium Seller',
+                sellerImage: seller?.profileImage || ''
+            };
+        }));
+
+        return NextResponse.json({ success: true, data: carsWithSellers });
     } catch (error) {
         return NextResponse.json({ success: false, error: error.message }, { status: 400 });
     }

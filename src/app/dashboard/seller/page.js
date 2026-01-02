@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { useUser } from '@clerk/nextjs';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, Loader2, Edit, Trash2, Phone, X, Upload, Image as ImageIcon } from 'lucide-react';
+import { Plus, Loader2, Edit, Trash2, Phone, X, Upload, Image as ImageIcon, User } from 'lucide-react';
 import Link from 'next/link';
 import Header from '../../components/Header';
 
@@ -227,6 +227,13 @@ export default function SellerDashboard() {
                             <h1 className="text-3xl font-bold mb-2">Seller <span className="text-red-600">Dashboard</span></h1>
                             <p className="text-gray-400">Manage your exclusive car listings.</p>
                         </div>
+                        <Link
+                            href="/dashboard/profile"
+                            className="bg-white/5 hover:bg-white/10 text-white px-6 py-3 rounded-2xl font-bold border border-white/10 flex items-center gap-2 transition-all"
+                        >
+                            <User className="w-5 h-5 text-red-600" />
+                            Edit Profile
+                        </Link>
                     </div>
 
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 pb-20">
@@ -272,8 +279,13 @@ export default function SellerDashboard() {
                                             <select name="type" value={formData.type} onChange={handleChange} className="w-full bg-black border border-zinc-800 rounded-xl px-4 py-3 text-sm outline-none focus:border-red-600">
                                                 <option>Sports</option><option>SUV</option><option>Sedan</option><option>Luxury</option><option>Electric</option>
                                             </select>
-                                            <input type="text" name="location" value={formData.location} onChange={handleChange} placeholder="Location" className="w-full bg-black border border-zinc-800 rounded-xl px-4 py-3 text-sm outline-none focus:border-red-600" required />
+                                            <select name="status" value={formData.status} onChange={handleChange} className="w-full bg-black border border-zinc-800 rounded-xl px-4 py-3 text-sm outline-none focus:border-red-600">
+                                                <option value="active">Active</option>
+                                                <option value="reserved">Reserved</option>
+                                                <option value="sold">Sold</option>
+                                            </select>
                                         </div>
+                                        <input type="text" name="location" value={formData.location} onChange={handleChange} placeholder="Location" className="w-full bg-black border border-zinc-800 rounded-xl px-4 py-3 text-sm outline-none focus:border-red-600" required />
                                     </div>
 
                                     {/* Photos Section */}
@@ -370,8 +382,14 @@ export default function SellerDashboard() {
                                                     <button onClick={() => handleEdit(car)} className="bg-black/60 backdrop-blur-md p-2.5 rounded-xl text-white hover:bg-red-600 transition-all shadow-xl"><Edit className="w-4 h-4" /></button>
                                                     <button onClick={() => handleDelete(car._id)} className="bg-black/60 backdrop-blur-md p-2.5 rounded-xl text-white hover:bg-red-600 transition-all shadow-xl"><Trash2 className="w-4 h-4" /></button>
                                                 </div>
-                                                <div className="absolute bottom-4 left-4">
+                                                <div className="absolute bottom-4 left-4 flex gap-2">
                                                     <span className="bg-black/60 backdrop-blur-md px-3 py-1 rounded-lg text-[10px] font-bold uppercase tracking-widest border border-white/10">{car.type}</span>
+                                                    <span className={`px-3 py-1 rounded-lg text-[10px] font-bold uppercase tracking-widest border backdrop-blur-md ${car.status === 'sold' ? 'bg-zinc-800 text-zinc-500 border-zinc-700' :
+                                                        car.status === 'reserved' ? 'bg-amber-600/80 text-white border-amber-500' :
+                                                            'bg-red-600/80 text-white border-red-500'
+                                                        }`}>
+                                                        {car.status}
+                                                    </span>
                                                 </div>
                                             </div>
                                             <div className="p-5">

@@ -15,11 +15,28 @@ export async function GET() {
 
         // 1. Try to find user by clerkId
         let user = await User.findOne({ clerkId: userId });
+        const clerkUser = await currentUser();
+
+        if (user && clerkUser) {
+            // Update existing record with the latest Clerk info
+            let changed = false;
+            if (!user.profileImage || user.profileImage !== clerkUser.imageUrl) {
+                user.profileImage = clerkUser.imageUrl;
+                changed = true;
+            }
+            if (!user.firstName || user.firstName !== clerkUser.firstName) {
+                user.firstName = clerkUser.firstName;
+                changed = true;
+            }
+            if (!user.lastName || user.lastName !== clerkUser.lastName) {
+                user.lastName = clerkUser.lastName;
+                changed = true;
+            }
+            if (changed) await user.save();
+        }
 
         if (!user) {
             // 2. If not found, get Clerk details to try finding by email
-            const clerkUser = await currentUser();
-
             if (!clerkUser) {
                 return NextResponse.json({ success: false, error: 'User data not found in Clerk' }, { status: 404 });
             }
@@ -36,6 +53,7 @@ export async function GET() {
                     // Also update names if they've changed
                     user.firstName = clerkUser.firstName || user.firstName;
                     user.lastName = clerkUser.lastName || user.lastName;
+                    user.profileImage = clerkUser.imageUrl || user.profileImage;
                     await user.save();
                     console.log("API: Synced existing email account to new Clerk ID");
                 } else {
@@ -45,6 +63,7 @@ export async function GET() {
                         email: userEmail,
                         firstName: clerkUser.firstName || '',
                         lastName: clerkUser.lastName || '',
+                        profileImage: clerkUser.imageUrl || '',
                     });
                     console.log("API: Created brand new user account");
                 }
@@ -91,6 +110,7 @@ export async function POST(request) {
             if (user) {
                 user.clerkId = userId;
                 user.role = role;
+                user.profileImage = clerkUser.imageUrl || user.profileImage;
                 await user.save();
             } else {
                 user = await User.create({
@@ -98,6 +118,7 @@ export async function POST(request) {
                     email: userEmail || '',
                     firstName: clerkUser.firstName || '',
                     lastName: clerkUser.lastName || '',
+                    profileImage: clerkUser.imageUrl || '',
                     role,
                 });
             }
@@ -118,6 +139,34 @@ export async function POST(request) {
         return NextResponse.json({ success: true, data: user });
     } catch (error) {
         console.error("API Error [POST /api/user]:", error);
+        return NextResponse.json({ success: false, error: error.message }, { status: 400 });
+    }
+}
+
+export async function PUT(request) {
+    try {
+        const { userId } = await auth();
+
+        if (!userId) {
+            return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
+        }
+
+        await dbConnect();
+        const { firstName, lastName, profileImage } = await request.json();
+
+        const user = await User.findOneAndUpdate(
+            { clerkId: userId },
+            { firstName, lastName, profileImage },
+            { new: true, runValidators: true }
+        );
+
+        if (!user) {
+            return NextResponse.json({ success: false, error: 'User not found' }, { status: 404 });
+        }
+
+        return NextResponse.json({ success: true, data: user });
+    } catch (error) {
+        console.error("API Error [PUT /api/user]:", error);
         return NextResponse.json({ success: false, error: error.message }, { status: 400 });
     }
 }
