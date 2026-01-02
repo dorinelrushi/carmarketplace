@@ -1,8 +1,7 @@
 import { Geist, Geist_Mono } from "next/font/google";
-import { ClerkProvider } from '@clerk/nextjs';
+import { ClerkProvider } from "@clerk/nextjs";
 import "./globals.css";
-import { Analytics } from "@vercel/analytics/react"
-
+import { Analytics } from "@vercel/analytics/react";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -16,14 +15,18 @@ const geistMono = Geist_Mono({
 
 export const metadata = {
   title: "Speedster - Luxury & Performance",
-  description: "Experience the thrill of the drive with our premium collection of sports cars and SUVs.",
+  description:
+    "Experience the thrill of the drive with our premium collection of sports cars and SUVs.",
 };
 
 export default function RootLayout({ children }) {
   return (
     <ClerkProvider>
       <html lang="en">
-        <body suppressHydrationWarning={true} className={`${geistSans.variable} ${geistMono.variable} bg-black text-white antialiased`}>
+        <body
+          suppressHydrationWarning={true}
+          className={`${geistSans.variable} ${geistMono.variable} bg-black text-white antialiased`}
+        >
           {children}
           <Analytics />
         </body>
