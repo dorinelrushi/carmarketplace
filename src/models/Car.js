@@ -4,7 +4,12 @@ const CarSchema = new mongoose.Schema({
     title: {
         type: String,
         required: [true, 'Please provide a title for the car.'],
-        maxlength: [60, 'Title cannot be more than 60 characters'],
+        maxlength: [100, 'Title cannot be more than 100 characters'],
+    },
+    slug: {
+        type: String,
+        required: true,
+        unique: true,
     },
     description: {
         type: String,
@@ -13,10 +18,10 @@ const CarSchema = new mongoose.Schema({
     type: {
         type: String,
         required: [true, 'Please specify the type of car.'],
-        enum: ['Sports', 'SUV', 'Electric', 'Sedan', 'Truck'],
+        enum: ['Sports', 'SUV', 'Electric', 'Sedan', 'Truck', 'Luxury'],
     },
     price: {
-        type: String, // Keeping as string for formatting flexibility (e.g. "$145,000")
+        type: String,
     },
     listingType: {
         type: String,
@@ -25,15 +30,15 @@ const CarSchema = new mongoose.Schema({
         required: true,
     },
     rentalPrice: {
-        type: String, // e.g. "$500/day"
+        type: String,
     },
     location: {
         type: String,
         required: [true, 'Please provide a location.'],
     },
-    imageUrl: {
-        type: String,
-        required: [true, 'Please provide an image URL.'],
+    images: {
+        type: [String], // Array of image URLs/Base64
+        required: [true, 'Please provide at least one image.'],
     },
     sellerId: {
         type: String,
@@ -48,8 +53,8 @@ const CarSchema = new mongoose.Schema({
         engine: String,
         transmission: String,
         topSpeed: String,
-        acceleration: String, // e.g. "0-60: 2.8s"
-        horsepower: String,   // e.g. "750 HP"
+        acceleration: String,
+        horsepower: String,
     },
     make: {
         type: String,
@@ -76,7 +81,7 @@ const CarSchema = new mongoose.Schema({
         type: Date,
         default: Date.now,
     },
-}, { strict: false });
+}, { strict: false, timestamps: true });
 
 // Force model recompilation if it exists to pick up schema changes
 if (mongoose.models.Car) {
